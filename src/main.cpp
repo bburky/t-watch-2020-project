@@ -18,6 +18,7 @@ Created by Lewis he on October 10, 2019.
 #include "esp_wifi.h"
 #include <WiFi.h>
 #include "gui.h"
+#include "ble.h"
 
 #define G_EVENT_VBUS_PLUGIN         _BV(0)
 #define G_EVENT_VBUS_REMOVE         _BV(1)
@@ -102,6 +103,8 @@ void low_energy()
 void setup()
 {
     Serial.begin(115200);
+
+    setupBle();
 
     //Create a program that allows the required message objects and group flags
     g_event_queue_handle = xQueueCreate(20, sizeof(uint8_t));
