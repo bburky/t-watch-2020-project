@@ -287,7 +287,7 @@ lv_obj_t* MenuBar::obj(int index) const
     return _obj[index];
 }
 
-MenuBar::lv_menu_config_t _cfg[7] = {
+MenuBar::lv_menu_config_t _cfg[3] = {
     {.name = "Bluetooth",  .img = (void *) &bluetooth, .event_cb = bluetooth_event_cb},
     {.name = "WiFi",  .img = (void *) &wifi, .event_cb = wifi_event_cb},
     // {.name = "SD Card",  .img = (void *) &sd,  /*.event_cb =sd_event_cb*/},
