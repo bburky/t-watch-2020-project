@@ -46,12 +46,12 @@ void processMessage();
 
 class MySecurity : public BLESecurityCallbacks {
 
-	uint32_t onPassKeyRequest(){
+    uint32_t onPassKeyRequest(){
         Serial.println("BLE: PassKeyRequest");
         // TODO: when is this used?
-		return 123456;
-	}
-	void onPassKeyNotify(uint32_t pass_key){
+        return 123456;
+    }
+    void onPassKeyNotify(uint32_t pass_key){
         blePairing = true;
 
         char format[256];
@@ -65,30 +65,30 @@ class MySecurity : public BLESecurityCallbacks {
                 mbox = nullptr;
             }
         });
-	}
-	bool onConfirmPIN(uint32_t pass_key){
+    }
+    bool onConfirmPIN(uint32_t pass_key){
         Serial.printf("BLE: The passkey YES/NO number :%06d\n", pass_key);
-	    // vTaskDelay(5000);
-		// return true;
+        // vTaskDelay(5000);
+        // return true;
         // TODO: when is this used?
         return false;
-	}
-	bool onSecurityRequest(){
-	    Serial.println("BLE: SecurityRequest");
+    }
+    bool onSecurityRequest(){
+        Serial.println("BLE: SecurityRequest");
         // TODO: when is this used?
-		return true;
-	}
+        return true;
+    }
 
-	void onAuthenticationComplete(esp_ble_auth_cmpl_t cmpl){
+    void onAuthenticationComplete(esp_ble_auth_cmpl_t cmpl){
         char format[256];
         snprintf(format, sizeof(format), "Bluetooth pairing %s", cmpl.success ? "successful" : "unsuccessful");
-		Serial.println(format);
+        Serial.println(format);
 
-		if(cmpl.success){
-			uint16_t length;
-			esp_ble_gap_get_whitelist_size(&length);
-			ESP_LOGD(LOG_TAG, "size: %d", length);
-		} else {
+        if(cmpl.success){
+            uint16_t length;
+            esp_ble_gap_get_whitelist_size(&length);
+            ESP_LOGD(LOG_TAG, "size: %d", length);
+        } else {
             // Restart advertising
             pServer->startAdvertising();
         }
@@ -104,7 +104,7 @@ class MySecurity : public BLESecurityCallbacks {
                 }
             });
         }
-	}
+    }
 };
 
 class MyServerCallbacks : public BLEServerCallbacks
