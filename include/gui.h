@@ -164,6 +164,7 @@ public:
     } lv_menu_config_t;
     MenuBar();
     ~MenuBar();
+    static MenuBar *getMenuBar();
     void createMenu(lv_menu_config_t *config, int count, lv_event_cb_t event_cb, int direction = 1);
     lv_obj_t *exitBtn() const;
     lv_obj_t *self() const;

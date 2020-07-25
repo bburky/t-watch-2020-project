@@ -17,6 +17,7 @@ Created by Lewis he on October 10, 2019.
 #include <Ticker.h>
 #include "FS.h"
 #include "SD.h"
+#include "ble.h"
 
 #define RTC_TIME_ZONE   "CST-8"
 
@@ -68,6 +69,9 @@ static void light_event_cb();
 static void modules_event_cb();
 static void camera_event_cb();
 static void wifi_destory();
+
+MenuBar menuBars;
+StatusBar bar;
 
 StatusBar::StatusBar()
 {
@@ -185,6 +189,11 @@ MenuBar::MenuBar()
 
 MenuBar::~MenuBar() {};
 
+MenuBar* MenuBar::getMenuBar()
+{
+    return &menuBars;
+}
+
 void MenuBar::createMenu(lv_menu_config_t *config, int count, lv_event_cb_t event_cb, int direction)
 {
     static lv_style_t menuStyle;
@@ -279,7 +288,7 @@ lv_obj_t* MenuBar::obj(int index) const
 }
 
 MenuBar::lv_menu_config_t _cfg[7] = {
-    {.name = "Bluetooth",  .img = (void *) &bluetooth, /*.event_cb = bluetooth_event_cb*/},
+    {.name = "Bluetooth",  .img = (void *) &bluetooth, .event_cb = bluetooth_event_cb},
     {.name = "WiFi",  .img = (void *) &wifi, .event_cb = wifi_event_cb},
     // {.name = "SD Card",  .img = (void *) &sd,  /*.event_cb =sd_event_cb*/},
     // {.name = "Light",  .img = (void *) &light, /*.event_cb = light_event_cb*/},
@@ -288,8 +297,6 @@ MenuBar::lv_menu_config_t _cfg[7] = {
     // {.name = "Camera",  .img = (void *) &CAMERA_PNG, /*.event_cb = camera_event_cb*/ }
 };
 
-MenuBar menuBars;
-StatusBar bar;
 
 static void event_handler(lv_obj_t *obj, lv_event_t event)
 {

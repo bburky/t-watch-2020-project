@@ -11,11 +11,12 @@
     https://www.espruino.com/Gadgetbridge
 */
 
+#include "config.h"
 #include "Arduino.h"
 #include <limits.h>
-
 #include <LilyGoWatch.h>
 #include <time.h>
+#include "gui.h"
 
 #include <BLEDevice.h>
 #include <BLEServer.h>
@@ -29,11 +30,14 @@
 #define CHARACTERISTIC_UUID_RX BLEUUID("6E400002-B5A3-F393-E0A9-E50E24DCCA9E")
 #define CHARACTERISTIC_UUID_TX BLEUUID("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
 
+static MBox *mbox = nullptr;
+
 BLEServer *pServer = NULL;
 BLECharacteristic *pTxCharacteristic;
 uint8_t txValue = 0;
 bool bleConnected = false;
 bool bleEnabled = false;
+bool blePairing = false;
 
 #define MAX_MESSAGE_SIZE 512
 String message;
@@ -47,10 +51,22 @@ class MySecurity : public BLESecurityCallbacks {
 		return 123456;
 	}
 	void onPassKeyNotify(uint32_t pass_key){
-        Serial.printf("BLE: The passkey Notify number: %6d\n", pass_key);
+        blePairing = true;
+
+        char format[256];
+        snprintf(format, sizeof(format), "Bluetooth Pairing Request\n\nPIN: %06d", pass_key);
+        Serial.println(format);
+        delete mbox;
+        mbox = new MBox;
+        mbox->create(format, [](lv_obj_t *obj, lv_event_t event) {
+            if (event == LV_EVENT_VALUE_CHANGED) {
+                delete mbox;
+                mbox = nullptr;
+            }
+        });
 	}
 	bool onConfirmPIN(uint32_t pass_key){
-        Serial.printf("BLE: The passkey YES/NO number :%6d\n", pass_key);
+        Serial.printf("BLE: The passkey YES/NO number :%06d\n", pass_key);
 	    // vTaskDelay(5000);
 		// return true;
         // TODO: when is this used?
@@ -63,12 +79,30 @@ class MySecurity : public BLESecurityCallbacks {
 	}
 
 	void onAuthenticationComplete(esp_ble_auth_cmpl_t cmpl){
-		Serial.println("BLE: Starting BLE work!");
+        char format[256];
+        snprintf(format, sizeof(format), "Bluetooth pairing %s", cmpl.success ? "successful" : "unsuccessful");
+		Serial.println(format);
+
 		if(cmpl.success){
 			uint16_t length;
 			esp_ble_gap_get_whitelist_size(&length);
 			ESP_LOGD(LOG_TAG, "size: %d", length);
-		}
+		} else {
+            // Restart advertising
+            pServer->startAdvertising();
+        }
+
+        if (blePairing) {
+            blePairing = false;
+            delete mbox;
+            mbox = new MBox;
+            mbox->create(format, [](lv_obj_t *obj, lv_event_t event) {
+                if (event == LV_EVENT_VALUE_CHANGED) {
+                    delete mbox;
+                    mbox = nullptr;
+                }
+            });
+        }
 	}
 };
 
@@ -194,4 +228,19 @@ void setupBle()
     pServer->getAdvertising()->addServiceUUID(pService->getUUID());
     pServer->getAdvertising()->start();
     Serial.println("BLE advertising...");
+}
+
+void bluetooth_event_cb() {
+    static const char *btns[] = {"Ok", "Cancel", ""};
+    delete mbox;
+    mbox = new MBox;
+    mbox->create("test", [](lv_obj_t *obj, lv_event_t event) {
+        if (event == LV_EVENT_VALUE_CHANGED) {
+            delete mbox;
+            mbox = nullptr;
+            MenuBar *menubars = MenuBar::getMenuBar();
+            menubars->hidden(false);
+        }
+    });
+    mbox->setBtn(btns);
 }
