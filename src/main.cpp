@@ -81,12 +81,13 @@ void low_energy()
         ttgo->stopLvglTick();
         ttgo->bma->enableStepCountInterrupt(false);
         ttgo->displaySleep();
-        if (!WiFi.isConnected()) {
-            lenergy = true;
-            WiFi.mode(WIFI_OFF);
-            // rtc_clk_cpu_freq_set(RTC_CPU_FREQ_2M);
-            setCpuFrequencyMhz(20);
-        }
+        // Disabling wifi also seems to not allow BLE to work with the screen off.
+        // if (!WiFi.isConnected()) {
+        //     lenergy = true;
+        //     WiFi.mode(WIFI_OFF);
+        //     // rtc_clk_cpu_freq_set(RTC_CPU_FREQ_2M);
+        //     setCpuFrequencyMhz(20);
+        // }
     } else {
         ttgo->startLvglTick();
         ttgo->displayWakeup();
