@@ -48,6 +48,7 @@ class MySecurity : public BLESecurityCallbacks {
 
 	uint32_t onPassKeyRequest(){
         Serial.println("BLE: PassKeyRequest");
+        // TODO: when is this used?
 		return 123456;
 	}
 	void onPassKeyNotify(uint32_t pass_key){
