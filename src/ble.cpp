@@ -22,9 +22,9 @@
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
 
-#define SERVICE_UUID "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
-#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+#define SERVICE_UUID BLEUUID("6E400001-B5A3-F393-E0A9-E50E24DCCA9E") // UART service UUID
+#define CHARACTERISTIC_UUID_RX BLEUUID("6E400002-B5A3-F393-E0A9-E50E24DCCA9E")
+#define CHARACTERISTIC_UUID_TX BLEUUID("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pTxCharacteristic;
@@ -36,6 +36,38 @@ bool bleEnabled = false;
 String message;
 
 void processMessage();
+
+class MySecurity : public BLESecurityCallbacks {
+
+	uint32_t onPassKeyRequest(){
+        Serial.println("BLE: PassKeyRequest");
+		return 123456;
+	}
+	void onPassKeyNotify(uint32_t pass_key){
+        Serial.printf("BLE: The passkey Notify number: %6d\n", pass_key);
+	}
+	bool onConfirmPIN(uint32_t pass_key){
+        Serial.printf("BLE: The passkey YES/NO number :%6d\n", pass_key);
+	    // vTaskDelay(5000);
+		// return true;
+        // TODO: when is this used?
+        return false;
+	}
+	bool onSecurityRequest(){
+	    Serial.println("BLE: SecurityRequest");
+        // TODO: when is this used?
+		return true;
+	}
+
+	void onAuthenticationComplete(esp_ble_auth_cmpl_t cmpl){
+		Serial.println("BLE: Starting BLE work!");
+		if(cmpl.success){
+			uint16_t length;
+			esp_ble_gap_get_whitelist_size(&length);
+			ESP_LOGD(LOG_TAG, "size: %d", length);
+		}
+	}
+};
 
 class MyServerCallbacks : public BLEServerCallbacks
 {
@@ -113,6 +145,18 @@ void setupBle()
     // BLEDevice::init("Espruino Gadgetbridge Compatible Device");
     BLEDevice::init("Espruino");
 
+    // Enable encryption
+    BLEServer* pServer = BLEDevice::createServer();
+    BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_NO_MITM);
+    BLEDevice::setSecurityCallbacks(new MySecurity());
+
+    // Enable authentication
+    BLESecurity *pSecurity = new BLESecurity();
+    pSecurity->setAuthenticationMode(ESP_LE_AUTH_REQ_SC_BOND);
+    pSecurity->setCapability(ESP_IO_CAP_OUT);
+    pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+    pSecurity->setRespEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+
     // Create the BLE Server
     pServer = BLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks());
@@ -124,13 +168,13 @@ void setupBle()
     pTxCharacteristic = pService->createCharacteristic(
         CHARACTERISTIC_UUID_TX,
         BLECharacteristic::PROPERTY_NOTIFY);
-
+    pTxCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
     pTxCharacteristic->addDescriptor(new BLE2902());
 
     BLECharacteristic *pRxCharacteristic = pService->createCharacteristic(
         CHARACTERISTIC_UUID_RX,
         BLECharacteristic::PROPERTY_WRITE);
-
+    pRxCharacteristic->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
     pRxCharacteristic->setCallbacks(new MyCallbacks());
 
     // Start the service
