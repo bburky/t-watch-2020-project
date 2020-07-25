@@ -14,6 +14,9 @@
 #include "Arduino.h"
 #include <limits.h>
 
+#include <LilyGoWatch.h>
+#include <time.h>
+
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -129,7 +132,14 @@ void processMessage() {
     if (message.length() >= 6 && message[0] == 'G' && message[1] == 'B' && message[2] == '(' && message[message.length()-1] == ')') {
         Serial.printf("BLE GB JSON: %s\n", message.substring(3, message.length()-1).c_str());
     } else if (message.startsWith("setTime(")) {
-        Serial.printf("BLE set time: %ld\n", message.substring(8).toInt());
+        time_t time = message.substring(8).toInt();
+        struct tm timeinfo;
+        localtime_r(&time, &timeinfo);
+        Serial.printf("BLE set time %ld: %d-%d-%d/%d:%d:%d\n", time, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+
+        TTGOClass *ttgo = TTGOClass::getWatch();
+        ttgo->rtc->setDateTime(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+        ttgo->rtc->syncToSystem();
     } else {
         Serial.printf("BLE other data: %s\n", message.c_str());
     }

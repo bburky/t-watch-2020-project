@@ -104,8 +104,6 @@ void setup()
 {
     Serial.begin(115200);
 
-    setupBle();
-
     //Create a program that allows the required message objects and group flags
     g_event_queue_handle = xQueueCreate(20, sizeof(uint8_t));
     g_event_group = xEventGroupCreate();
@@ -202,6 +200,9 @@ void setup()
 
     //Setting up the network
     setupNetwork();
+
+    //Set up BLE
+    setupBle();
 
     //Execute your own GUI interface
     setupGui();
