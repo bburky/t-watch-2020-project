@@ -1,0 +1,1 @@
+void process_gadgetbridge_json(const char* json_string);

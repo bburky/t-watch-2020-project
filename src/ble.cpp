@@ -17,6 +17,7 @@
 #include <LilyGoWatch.h>
 #include <time.h>
 #include "gui.h"
+#include "gadgetbridge.h"
 
 #include <BLEDevice.h>
 #include <BLEServer.h>
@@ -164,8 +165,9 @@ class MyCallbacks : public BLECharacteristicCallbacks
 
 void processMessage() {
     // 6 characters: GB({})
-    if (message.length() >= 6 && message[0] == 'G' && message[1] == 'B' && message[2] == '(' && message[message.length()-1] == ')') {
+    if (message.startsWith("GB(")) {
         Serial.printf("BLE GB JSON: %s\n", message.substring(3, message.length()-1).c_str());
+        process_gadgetbridge_json(message.substring(3, message.length()-1).c_str());
     } else if (message.startsWith("setTime(")) {
         time_t time = message.substring(8).toInt();
         int tz_str_offset = message.indexOf("E.setTimeZone(");
