@@ -70,13 +70,14 @@ void low_energy()
         ttgo->stopLvglTick();
         ttgo->bma->enableStepCountInterrupt(false);
         ttgo->displaySleep();
-        // Disabling wifi also seems to not allow BLE to work with the screen off.
-        // if (!WiFi.isConnected()) {
-        //     lenergy = true;
-        //     WiFi.mode(WIFI_OFF);
-        //     // rtc_clk_cpu_freq_set(RTC_CPU_FREQ_2M);
-        //     setCpuFrequencyMhz(20);
-        // }
+        if (!WiFi.isConnected()) {
+            lenergy = true;
+            WiFi.mode(WIFI_OFF);
+            // rtc_clk_cpu_freq_set(RTC_CPU_FREQ_2M);
+            // 80 MHZ is the minimum clock speed for keeping bluetooth working
+            setCpuFrequencyMhz(80);
+            // setCpuFrequencyMhz(20);
+        }
     } else {
         ttgo->startLvglTick();
         ttgo->displayWakeup();
