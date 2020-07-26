@@ -78,6 +78,11 @@ StatusBar::StatusBar()
     memset(_array, 0, sizeof(_array));
 }
 
+StatusBar* StatusBar::getStatusBar()
+{
+    return &bar;
+}
+
 void StatusBar::createIcons(lv_obj_t *par)
 {
     _par = par;

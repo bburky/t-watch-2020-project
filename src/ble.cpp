@@ -39,11 +39,13 @@ uint8_t txValue = 0;
 bool bleConnected = false;
 bool bleEnabled = false;
 bool blePairing = false;
+bool restoreMenubars = true;
 
 #define MAX_MESSAGE_SIZE 512
 String message;
 
 void processMessage();
+void destroyMBox();
 
 class MySecurity : public BLESecurityCallbacks {
 
@@ -62,8 +64,7 @@ class MySecurity : public BLESecurityCallbacks {
         mbox = new MBox;
         mbox->create(format, [](lv_obj_t *obj, lv_event_t event) {
             if (event == LV_EVENT_VALUE_CHANGED) {
-                delete mbox;
-                mbox = nullptr;
+                destroyMBox();
             }
         });
     }
@@ -100,8 +101,7 @@ class MySecurity : public BLESecurityCallbacks {
             mbox = new MBox;
             mbox->create(format, [](lv_obj_t *obj, lv_event_t event) {
                 if (event == LV_EVENT_VALUE_CHANGED) {
-                    delete mbox;
-                    mbox = nullptr;
+                    destroyMBox();
                 }
             });
         }
@@ -114,16 +114,16 @@ class MyServerCallbacks : public BLEServerCallbacks
     {
         Serial.println("BLE Connected");
         bleConnected = true;
+        StatusBar *statusBar = StatusBar::getStatusBar();
+        statusBar->show(LV_STATUS_BAR_BLUETOOTH);
     };
 
     void onDisconnect(BLEServer *pServer)
     {
         Serial.println("BLE Disconnected");
         bleConnected = false;
-
-        delay(500);                  // give the bluetooth stack the chance to get things ready
-        pServer->startAdvertising(); // restart advertising
-        Serial.println("BLE advertising...");
+        StatusBar *statusBar = StatusBar::getStatusBar();
+        statusBar->hidden(LV_STATUS_BAR_BLUETOOTH);
     }
 };
 
@@ -237,16 +237,27 @@ void setupBle()
 }
 
 void bluetooth_event_cb() {
-    static const char *btns[] = {"Ok", "Cancel", ""};
+    // Actually, bluetooth is always advertising currently. This menu button isn't really needed right now.
+    restoreMenubars = true;
+    pServer->getAdvertising()->start();
+
+    // static const char *btns[] = {"Stop", ""};
     delete mbox;
     mbox = new MBox;
-    mbox->create("test", [](lv_obj_t *obj, lv_event_t event) {
+    mbox->create("Connect a Bluetooth Device\n\nBluetooth is in discoverable mode now.", [](lv_obj_t *obj, lv_event_t event) {
         if (event == LV_EVENT_VALUE_CHANGED) {
-            delete mbox;
-            mbox = nullptr;
-            MenuBar *menubars = MenuBar::getMenuBar();
-            menubars->hidden(false);
+            // pServer->getAdvertising()->stop();
+            destroyMBox();
         }
     });
-    mbox->setBtn(btns);
+    // mbox->setBtn(btns);
+}
+
+void destroyMBox() {
+    delete mbox;
+    mbox = nullptr;
+    if (restoreMenubars) {
+        MenuBar *menubars = MenuBar::getMenuBar();
+        menubars->hidden(false);
+    }
 }

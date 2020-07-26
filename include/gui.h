@@ -137,6 +137,7 @@ class StatusBar
     } lv_status_bar_t;
 public:
     StatusBar();
+    static StatusBar *getStatusBar();
     void createIcons(lv_obj_t *par);
     void setStepCounter(uint32_t counter);
     void updateLevel(int level);
