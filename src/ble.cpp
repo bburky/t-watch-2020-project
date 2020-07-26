@@ -232,6 +232,9 @@ void setupBle()
 
     // Start advertising
     pServer->getAdvertising()->addServiceUUID(pService->getUUID());
+    // Trying setting the advertising interval to 1s to get better battery life?
+    pServer->getAdvertising()->setMinInterval(1000);
+    pServer->getAdvertising()->setMaxInterval(1500);
     pServer->getAdvertising()->start();
     Serial.println("BLE advertising...");
 }
