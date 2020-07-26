@@ -175,10 +175,10 @@ void processMessage() {
 
         struct tm timeinfo;
         localtime_r(&time, &timeinfo);
-        Serial.printf("BLE set time %ld %d: %d-%d-%d/%d:%d:%d\n", time, tz, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour + tz, timeinfo.tm_min, timeinfo.tm_sec);
+        Serial.printf("BLE set time %ld %d: %d-%d-%d/%d:%d:%d\n", time, tz, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, (timeinfo.tm_hour + 24 + tz) % 24, timeinfo.tm_min, timeinfo.tm_sec);
 
         TTGOClass *ttgo = TTGOClass::getWatch();
-        ttgo->rtc->setDateTime(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour + tz, timeinfo.tm_min, timeinfo.tm_sec);
+        ttgo->rtc->setDateTime(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, (timeinfo.tm_hour + 24 + tz) % 24, timeinfo.tm_min, timeinfo.tm_sec);
         ttgo->rtc->syncToSystem();
     } else {
         Serial.printf("BLE other data: %s\n", message.c_str());
