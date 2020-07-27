@@ -124,6 +124,11 @@ class MyServerCallbacks : public BLEServerCallbacks
         bleConnected = false;
         StatusBar *statusBar = StatusBar::getStatusBar();
         statusBar->hidden(LV_STATUS_BAR_BLUETOOTH);
+
+        // Restart advertising
+        delay(500);
+        pServer->getAdvertising()->start();
+        Serial.println("BLE advertising...");
     }
 };
 
@@ -194,6 +199,8 @@ void setupBle()
     // This is too long I think:
     // BLEDevice::init("Espruino Gadgetbridge Compatible Device");
     BLEDevice::init("Espruino");
+    // The minimum power level (-12dbm) ESP_PWR_LVL_N12 was too low
+    BLEDevice::setPower(ESP_PWR_LVL_N9);
 
     // Enable encryption
     BLEServer* pServer = BLEDevice::createServer();
@@ -232,9 +239,10 @@ void setupBle()
 
     // Start advertising
     pServer->getAdvertising()->addServiceUUID(pService->getUUID());
-    // Trying setting the advertising interval to 1s to get better battery life?
-    pServer->getAdvertising()->setMinInterval(1000);
-    pServer->getAdvertising()->setMaxInterval(1500);
+    // Slow advertising interval for battery life
+    // The maximum 0x4000 interval of ~16 sec was too slow, I could not reliably connect
+    pServer->getAdvertising()->setMinInterval(4000);
+    pServer->getAdvertising()->setMaxInterval(5000);
     pServer->getAdvertising()->start();
     Serial.println("BLE advertising...");
 }
@@ -243,6 +251,7 @@ void bluetooth_event_cb() {
     // Actually, bluetooth is always advertising currently. This menu button isn't really needed right now.
     restoreMenubars = true;
     pServer->getAdvertising()->start();
+    Serial.println("BLE advertising...");
 
     // static const char *btns[] = {"Stop", ""};
     delete mbox;

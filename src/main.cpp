@@ -82,12 +82,12 @@ void low_energy()
         ttgo->startLvglTick();
         ttgo->displayWakeup();
         ttgo->rtc->syncToSystem();
-        updateStepCounter(ttgo->bma->getCounter());
+        // updateStepCounter(ttgo->bma->getCounter());
         updateBatteryLevel();
         updateBatteryIcon(LV_ICON_CALCULATION);
         lv_disp_trig_activity(NULL);
         ttgo->openBL();
-        ttgo->bma->enableStepCountInterrupt();
+        // ttgo->bma->enableStepCountInterrupt();
     }
 }
 
@@ -120,35 +120,37 @@ void setup()
     //Initialize lvgl
     ttgo->lvgl_begin();
 
-    //Initialize bma423
-    ttgo->bma->begin();
-
     //Initialize motor
     ttgo->motor_begin();
 
+    //BMA423 disabled for now
+
+    //Initialize bma423
+    // ttgo->bma->begin();
+
     //Enable BMA423 interrupt
-    ttgo->bma->attachInterrupt();
+    // ttgo->bma->attachInterrupt();
 
     //Connection interrupted to the specified pin
-    pinMode(BMA423_INT1, INPUT);
-    attachInterrupt(BMA423_INT1, [] {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        EventBits_t  bits = xEventGroupGetBitsFromISR(isr_group);
-        if (bits & WATCH_FLAG_SLEEP_MODE)
-        {
-            //! For quick wake up, use the group flag
-            xEventGroupSetBitsFromISR(isr_group, WATCH_FLAG_SLEEP_EXIT | WATCH_FLAG_BMA_IRQ, &xHigherPriorityTaskWoken);
-        } else
-        {
-            uint8_t data = Q_EVENT_BMA_INT;
-            xQueueSendFromISR(g_event_queue_handle, &data, &xHigherPriorityTaskWoken);
-        }
+    // pinMode(BMA423_INT1, INPUT);
+    // attachInterrupt(BMA423_INT1, [] {
+    //     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    //     EventBits_t  bits = xEventGroupGetBitsFromISR(isr_group);
+    //     if (bits & WATCH_FLAG_SLEEP_MODE)
+    //     {
+    //         //! For quick wake up, use the group flag
+    //         xEventGroupSetBitsFromISR(isr_group, WATCH_FLAG_SLEEP_EXIT | WATCH_FLAG_BMA_IRQ, &xHigherPriorityTaskWoken);
+    //     } else
+    //     {
+    //         uint8_t data = Q_EVENT_BMA_INT;
+    //         xQueueSendFromISR(g_event_queue_handle, &data, &xHigherPriorityTaskWoken);
+    //     }
 
-        if (xHigherPriorityTaskWoken)
-        {
-            portYIELD_FROM_ISR ();
-        }
-    }, RISING);
+    //     if (xHigherPriorityTaskWoken)
+    //     {
+    //         portYIELD_FROM_ISR ();
+    //     }
+    // }, RISING);
 
     // Connection interrupted to the specified pin
     pinMode(AXP202_INT, INPUT);
@@ -225,7 +227,9 @@ void loop()
         if (lenergy) {
             lenergy = false;
             // rtc_clk_cpu_freq_set(RTC_CPU_FREQ_160M);
-            setCpuFrequencyMhz(160);
+            // setCpuFrequencyMhz(160);
+            // Limit CPU to 80MHz
+            setCpuFrequencyMhz(80);
         }
 
         low_energy();
