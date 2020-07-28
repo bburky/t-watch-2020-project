@@ -1,6 +1,6 @@
 #include "config.h"
 #include <Arduino.h>
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 #include "gui.h"
 #include "main.h"
 

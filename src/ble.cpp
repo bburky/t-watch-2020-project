@@ -89,7 +89,7 @@ class MySecurity : public BLESecurityCallbacks {
         if(cmpl.success){
             uint16_t length;
             esp_ble_gap_get_whitelist_size(&length);
-            ESP_LOGD(LOG_TAG, "size: %d", length);
+            // ESP_LOGD(LOG_TAG, "size: %d", length);
         } else {
             // Restart advertising
             pServer->startAdvertising();
